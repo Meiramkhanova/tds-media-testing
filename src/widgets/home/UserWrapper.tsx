@@ -1,15 +1,31 @@
 import { Button } from "@/components/ui/button";
 import {
   Card,
+  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { useUsers } from "@/hooks/useUsers";
 import Container from "@/shared/ui/Container";
-import { Plus } from "lucide-react";
+import { Plus, Search } from "lucide-react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { UsersTable } from "./UsersTable";
 
 function UserWrapper() {
+  const [search, setSearch] = useState("");
+  const { users, loading, error } = useUsers();
+
+  const filtered = users.filter((u) =>
+    `${u.firstName} ${u.lastName} ${u.email}`
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
+
+  console.log("users", users);
+
   return (
     <main>
       <Container>
@@ -29,6 +45,32 @@ function UserWrapper() {
                 </Link>
               </div>
             </CardHeader>
+
+            <CardContent>
+              <div className="mb-6">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+
+                  <Input
+                    placeholder="Search users by name, email or skills..."
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              {loading && (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                    <div className="mb-2 h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto"></div>
+                    <p className="text-sm text-muted-foreground">
+                      Loading users...
+                    </p>
+                  </div>
+                </div>
+              )}
+              {error && <div className="text-red-600">{error}</div>}
+              {!loading && !error && <UsersTable users={filtered} />}
+            </CardContent>
           </Card>
         </div>
       </Container>
