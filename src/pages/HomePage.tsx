@@ -10,21 +10,25 @@ import { Input } from "@/components/ui/input";
 import { useUsers } from "@/hooks/useUsers";
 import Container from "@/shared/ui/Container";
 import { Plus, Search } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { UsersTable } from "./UsersTable";
+import { UsersTable } from "../widgets/home/UsersTable";
 
-function UserWrapper() {
+function HomePage() {
   const [search, setSearch] = useState("");
+  const [debounced, setDebounced] = useState("");
   const { users, loading, error } = useUsers();
+
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(search), 300);
+    return () => clearTimeout(id);
+  }, [search]);
 
   const filtered = users.filter((u) =>
     `${u.firstName} ${u.lastName} ${u.email}`
       .toLowerCase()
-      .includes(search.toLowerCase())
+      .includes(debounced.toLowerCase())
   );
-
-  console.log("users", users);
 
   return (
     <main>
@@ -37,7 +41,7 @@ function UserWrapper() {
                   <CardTitle className="text-2xl">Users</CardTitle>
                   <CardDescription>Manage your user database</CardDescription>
                 </div>
-                <Link to="/users/new">
+                <Link to="/new-user">
                   <Button>
                     <Plus className="mr-2 h-4 w-4" />
                     Add User
@@ -52,7 +56,9 @@ function UserWrapper() {
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 
                   <Input
-                    placeholder="Search users by name, email or skills..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search users by name or email..."
                     className="pl-10"
                   />
                 </div>
@@ -78,4 +84,4 @@ function UserWrapper() {
   );
 }
 
-export default UserWrapper;
+export default HomePage;
