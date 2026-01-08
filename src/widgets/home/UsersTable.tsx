@@ -78,11 +78,20 @@ export function UsersTable({ users }: UsersTableProps) {
 
               <TableCell>
                 <div className="flex flex-wrap gap-1">
-                  {user.skills.map((skill, index) => (
-                    <Badge key={index} variant="secondary" className="text-xs">
-                      {skill}
-                    </Badge>
-                  ))}
+                  {Array.isArray(user.skills) ? (
+                    user.skills.map((skill, index) => (
+                      <Badge
+                        key={index}
+                        variant="secondary"
+                        className="text-xs">
+                        {skill}
+                      </Badge>
+                    ))
+                  ) : (
+                    <span className="text-muted-foreground text-xs">
+                      No skills
+                    </span>
+                  )}
                 </div>
               </TableCell>
 
