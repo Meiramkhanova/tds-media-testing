@@ -27,12 +27,14 @@ export async function createUser(user: User) {
 
   const created = await res.json();
 
+  console.log("created", created);
+
   const normalized = {
-    id: created.id,
+    id: crypto.randomUUID(), // cuz dummy json sends the same id every time
     firstName: created.firstName,
     lastName: created.lastName,
     email: created.email,
-    skills: created.skills ?? [],
+    skills: user.skills ?? [],
     registrationDate: new Date().toISOString().split("T")[0],
   };
 
