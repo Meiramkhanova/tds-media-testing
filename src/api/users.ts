@@ -4,9 +4,11 @@ export async function getUsers(): Promise<User[]> {
   const res = await fetch("https://dummyjson.com/users");
   const data = await res.json();
 
-  const custom = JSON.parse(localStorage.getItem("custom_users") || "[]");
+  const custom: User[] = JSON.parse(
+    localStorage.getItem("custom_users") || "[]"
+  );
 
-  const transformed = data.users.map((u: any) => ({
+  const transformed: User[] = data.users.map((u: any) => ({
     id: u.id,
     firstName: u.firstName,
     lastName: u.lastName,
@@ -15,7 +17,24 @@ export async function getUsers(): Promise<User[]> {
     registrationDate: new Date().toISOString().split("T")[0],
   }));
 
-  return [...transformed, ...custom];
+  /*
+  Если среди custom есть пользователь с тем же id, он заменяет API пользователя на кастомного.
+  */
+  const replaced = transformed.map((apiUser) => {
+    const found = custom.find((cu) => cu.id === apiUser.id);
+    return found ? found : apiUser;
+  });
+
+  /*
+  В newCustom будут содержаться все новые добавленные (кастомные) пользователи, которых нет в API.
+   */
+  const newCustom = custom.filter(
+    (cu) => !transformed.some((apiUser) => apiUser.id === cu.id)
+  );
+
+  const merged = [...replaced, ...newCustom].sort((a, b) => a.id - b.id);
+
+  return merged;
 }
 
 export async function createUser(user: User) {
@@ -30,7 +49,7 @@ export async function createUser(user: User) {
   console.log("created", created);
 
   const normalized = {
-    id: crypto.randomUUID(), // cuz dummy json sends the same id every time
+    id: Date.now(), // cuz dummy json sends the same id every time
     firstName: created.firstName,
     lastName: created.lastName,
     email: created.email,
@@ -46,4 +65,45 @@ export async function createUser(user: User) {
   );
 
   return normalized;
+}
+
+export async function updateUser(id: number, user: Partial<User>) {
+  const all = await getUsers();
+  const target = all.find((u) => u.id === id);
+  if (!target) return null;
+
+  const existingCustom = JSON.parse(
+    localStorage.getItem("custom_users") || "[]"
+  );
+
+  const isCustom = existingCustom.some((u: any) => u.id === id);
+
+  if (isCustom) {
+    const updated = existingCustom.map((u: any) =>
+      u.id === id ? { ...u, ...user } : u
+    );
+
+    localStorage.setItem("custom_users", JSON.stringify(updated));
+    return updated.find((u: any) => u.id === id);
+  }
+
+  const normalized = {
+    ...target,
+    ...user,
+  };
+
+  const updated = [...existingCustom, normalized];
+  localStorage.setItem("custom_users", JSON.stringify(updated));
+  return normalized;
+}
+
+export async function deleteUser(id: number) {
+  const existingCustom = JSON.parse(
+    localStorage.getItem("custom_users") || "[]"
+  );
+
+  const filtered = existingCustom.filter((u: any) => u.id !== id);
+  localStorage.setItem("custom_users", JSON.stringify(filtered));
+
+  return true;
 }

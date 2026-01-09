@@ -7,21 +7,21 @@ export function useUsers() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function load() {
-      try {
-        setLoading(true);
-        const data = await getUsers();
-        setUsers(data);
-      } catch (e) {
-        setError("Failed to load users");
-      } finally {
-        setLoading(false);
-      }
+  async function load() {
+    try {
+      setLoading(true);
+      const data = await getUsers();
+      setUsers(data);
+    } catch (e) {
+      setError("Failed to load users");
+    } finally {
+      setLoading(false);
     }
+  }
 
+  useEffect(() => {
     load();
   }, []);
 
-  return { users, loading, error };
+  return { users, loading, error, refresh: load };
 }
