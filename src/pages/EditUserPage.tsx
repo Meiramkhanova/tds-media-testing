@@ -203,7 +203,11 @@ function EditUserPage() {
                     disabled={isSubmitting}
                     placeholder="Add a skill (e.g., React, TypeScript)"
                   />
-                  <Button type="button" onClick={addSkill} size="icon">
+                  <Button
+                    className="size-12"
+                    type="button"
+                    onClick={addSkill}
+                    size="icon">
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>

@@ -18,6 +18,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { createUser } from "@/api/users";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const userSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
@@ -73,10 +74,18 @@ function NewUserPage() {
     try {
       await createUser(newUser);
 
+      toast("User created", {
+        description: "The user has been successfully added.",
+      });
+
       reset();
       setSkills([]);
       setSkillInput("");
       navigate("/");
+    } catch (err) {
+      toast("Failed to create", {
+        description: "Something went wrong while creating the user.",
+      });
     } finally {
       setIsSubmitting(false);
     }
