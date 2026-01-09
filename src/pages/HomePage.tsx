@@ -30,6 +30,8 @@ function HomePage() {
   const [debounced, setDebounced] = useState("");
   const { users, loading, error, refresh } = useUsers();
   const [deleteUserId, setDeleteUserId] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
 
   useEffect(() => {
     const id = setTimeout(() => setDebounced(search), 300);
@@ -41,6 +43,12 @@ function HomePage() {
       .toLowerCase()
       .includes(debounced.toLowerCase())
   );
+
+  const total = filtered.length;
+  const totalPages = Math.ceil(total / pageSize);
+
+  const start = (page - 1) * pageSize;
+  const paginated = filtered.slice(start, start + pageSize);
 
   const handleDelete = async () => {
     if (!deleteUserId) return;
@@ -55,6 +63,16 @@ function HomePage() {
       console.error("Failed to delete user:", error);
     }
   };
+
+  useEffect(() => {
+    setPage(1);
+  }, [debounced]);
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages || 1);
+    }
+  }, [totalPages]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -104,9 +122,29 @@ function HomePage() {
                 {error && <div className="text-red-600">{error}</div>}
                 {!loading && !error && (
                   <UsersTable
-                    users={filtered}
+                    users={paginated}
                     onDelete={(id) => setDeleteUserId(id)}
                   />
+                )}
+
+                {total > 0 && (
+                  <div className="flex items-center justify-between mt-4">
+                    <Button
+                      disabled={page === 1}
+                      onClick={() => setPage((p) => p - 1)}>
+                      Prev
+                    </Button>
+
+                    <span>
+                      Page {page} of {totalPages}
+                    </span>
+
+                    <Button
+                      disabled={page === totalPages}
+                      onClick={() => setPage((p) => p + 1)}>
+                      Next
+                    </Button>
+                  </div>
                 )}
               </CardContent>
             </Card>
