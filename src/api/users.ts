@@ -6,7 +6,16 @@ export async function getUsers(): Promise<User[]> {
 
   const custom = JSON.parse(localStorage.getItem("custom_users") || "[]");
 
-  return [...data.users, ...custom];
+  const transformed = data.users.map((u: any) => ({
+    id: u.id,
+    firstName: u.firstName,
+    lastName: u.lastName,
+    email: u.email,
+    skills: u.skills ?? ["React", "TypeScript"],
+    registrationDate: new Date().toISOString().split("T")[0],
+  }));
+
+  return [...transformed, ...custom];
 }
 
 export async function createUser(user: User) {
@@ -18,9 +27,21 @@ export async function createUser(user: User) {
 
   const created = await res.json();
 
+  const normalized = {
+    id: created.id,
+    firstName: created.firstName,
+    lastName: created.lastName,
+    email: created.email,
+    skills: created.skills ?? [],
+    registrationDate: new Date().toISOString().split("T")[0],
+  };
+
   const existing = JSON.parse(localStorage.getItem("custom_users") || "[]");
 
-  localStorage.setItem("custom_users", JSON.stringify([...existing, created]));
+  localStorage.setItem(
+    "custom_users",
+    JSON.stringify([...existing, normalized])
+  );
 
-  return created;
+  return normalized;
 }
