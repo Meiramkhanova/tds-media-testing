@@ -80,7 +80,7 @@ export function UsersTable({ users, onDelete }: UsersTableProps) {
               <TableCell>
                 <div className="flex flex-wrap gap-1">
                   {Array.isArray(user.skills) ? (
-                    user.skills.map((skill, index) => (
+                    user.skills.map((skill: string, index: number) => (
                       <Badge
                         key={index}
                         variant="secondary"
