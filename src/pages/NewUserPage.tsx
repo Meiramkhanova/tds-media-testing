@@ -70,8 +70,6 @@ function NewUserPage() {
       registrationDate: new Date().toISOString().split("T")[0],
     };
 
-    console.log("newUser", newUser);
-
     try {
       await createUser(newUser);
 

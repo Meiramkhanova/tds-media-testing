@@ -46,8 +46,6 @@ export async function createUser(user: User) {
 
   const created = await res.json();
 
-  console.log("created", created);
-
   const normalized = {
     id: Date.now(), // cuz dummy json sends the same id every time
     firstName: created.firstName,

@@ -17,8 +17,6 @@ interface UsersTableProps {
 }
 
 export function UsersTable({ users }: UsersTableProps) {
-  console.log(users);
-
   return (
     <div className="rounded-lg border">
       <Table>

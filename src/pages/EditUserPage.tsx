@@ -19,6 +19,7 @@ import { Link, useParams } from "react-router-dom";
 import z from "zod";
 import { useNavigate } from "react-router-dom";
 import { updateUser } from "@/api/users";
+import { toast } from "sonner";
 
 const userSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -38,13 +39,9 @@ type FormData = {
 
 function EditUserPage() {
   const { id } = useParams();
-
-  const { users, loading, refresh } = useUsers();
-
-  const user = users.find((u) => String(u.id) === id);
-
+  const { users, loading } = useUsers();
   const [skillInput, setSkillInput] = useState("");
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const { register, handleSubmit, control, reset } = useForm<FormData>({
@@ -62,19 +59,33 @@ function EditUserPage() {
     name: "skills",
   });
 
+  const user = users.find((u) => String(u.id) === id);
+
   async function onSubmit(data: FormData) {
     if (!id) return;
 
-    await updateUser(Number(id), {
-      firstName: data.firstName,
-      lastName: data.lastName,
-      email: data.email,
-      skills: data.skills.map((s) => s.value),
-    });
+    try {
+      setIsSubmitting(true);
 
-    await refresh();
+      await updateUser(Number(id), {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        skills: data.skills.map((s) => s.value),
+      });
 
-    navigate("/", { replace: true });
+      toast("User updated", {
+        description: "The user data has been successfully saved.",
+      });
+
+      navigate("/", { replace: true });
+    } catch (err) {
+      toast("Failed to update", {
+        description: "Something went wrong while saving changes.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   useEffect(() => {
@@ -154,7 +165,7 @@ function EditUserPage() {
                     First Name <span className="text-destructive">*</span>
                   </Label>
 
-                  <Input {...register("firstName")} />
+                  <Input {...register("firstName")} disabled={isSubmitting} />
                 </div>
 
                 <div className="space-y-2">
@@ -162,7 +173,7 @@ function EditUserPage() {
                     Last Name <span className="text-destructive">*</span>
                   </Label>
 
-                  <Input {...register("lastName")} />
+                  <Input {...register("lastName")} disabled={isSubmitting} />
                 </div>
               </div>
 
@@ -171,7 +182,7 @@ function EditUserPage() {
                   Email <span className="text-destructive">*</span>
                 </Label>
 
-                <Input {...register("email")} />
+                <Input {...register("email")} disabled={isSubmitting} />
               </div>
 
               <div className="space-y-2">
@@ -189,6 +200,7 @@ function EditUserPage() {
                         addSkill();
                       }
                     }}
+                    disabled={isSubmitting}
                     placeholder="Add a skill (e.g., React, TypeScript)"
                   />
                   <Button type="button" onClick={addSkill} size="icon">
@@ -224,8 +236,11 @@ function EditUserPage() {
               </div>
 
               <div className="flex gap-3 pt-4">
-                <Button type="submit" className="flex-1">
-                  save
+                <Button
+                  type="submit"
+                  className="flex-1"
+                  disabled={isSubmitting}>
+                  {isSubmitting ? "Saving..." : "Save changes"}
                 </Button>
 
                 <Link to="/" className="flex-1">
