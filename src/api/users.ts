@@ -32,7 +32,11 @@ export async function getUsers(): Promise<User[]> {
     (cu) => !transformed.some((apiUser) => apiUser.id === cu.id)
   );
 
-  const merged = [...replaced, ...newCustom].sort((a, b) => a.id - b.id);
+  const deleted = JSON.parse(localStorage.getItem("deleted") || "[]");
+
+  const merged = [...replaced, ...newCustom]
+    .filter((u) => !deleted.includes(u.id))
+    .sort((a, b) => a.id - b.id);
 
   return merged;
 }
@@ -96,6 +100,12 @@ export async function updateUser(id: number, user: Partial<User>) {
 }
 
 export async function deleteUser(id: number) {
+  const deleted = JSON.parse(localStorage.getItem("deleted") || "[]");
+
+  if (!deleted.includes(id)) {
+    localStorage.setItem("deleted", JSON.stringify([...deleted, id]));
+  }
+
   const existingCustom = JSON.parse(
     localStorage.getItem("custom_users") || "[]"
   );
