@@ -14,9 +14,10 @@ import { Link } from "react-router-dom";
 
 interface UsersTableProps {
   users: User[];
+  onDelete: (id: number) => void;
 }
 
-export function UsersTable({ users }: UsersTableProps) {
+export function UsersTable({ users, onDelete }: UsersTableProps) {
   return (
     <div className="rounded-lg border">
       <Table>
@@ -106,7 +107,11 @@ export function UsersTable({ users }: UsersTableProps) {
                       <Pencil className="h-4 w-4" />
                     </Button>
                   </Link>
-                  <Button variant="ghost" size="icon">
+
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onDelete(user.id)}>
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
                 </div>
